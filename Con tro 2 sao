@@ -1,0 +1,183 @@
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+
+struct _student_s
+{
+    char name[50];
+    int age;
+    int class;
+};
+
+typedef struct _student_s _student_t;
+
+_student_t student_list[4]=
+{
+    {"thuynt",1,1},
+    {"alo",2,2},
+    {"blo",3,3},
+    {"bon",4,4}
+};
+
+_student_t* get_data_back(char* name) 
+{
+    static i = 0;
+    for (i = 0; i < 4; i++) 
+    {
+        if (strcmp(name, student_list[i].name) == 0)
+        {
+            return &student_list[i];
+        }
+      
+    }
+     return NULL;
+}
+
+unsigned long long long_get_data_back(char* name)
+{
+    static i = 0;
+    for (i = 0; i < 4; i++)
+    {
+        if (strcmp(name, student_list[i].name) == 0)
+        {
+            return (unsigned long long)(&student_list[i]);
+        }
+
+    }
+    return 0;
+}
+
+
+int get_age(void* handle) 
+{
+    _student_t* years_old;
+    years_old = (_student_t*)(handle);
+    
+    return years_old->age;
+
+}
+
+typedef struct my_demo_s{
+    FILE* f;
+    char buf[1024];
+    int buf_size;
+}my_demo_t;
+
+void* log_create(char* path) 
+{
+    my_demo_t* tmp;
+    tmp = (my_demo_t*)malloc(sizeof(my_demo_t));
+    if (NULL == tmp) 
+    {
+        return NULL;
+    }
+
+    memset(tmp,0,sizeof(my_demo_t));
+    tmp->f = fopen(path,"w+");
+    if (NULL == tmp->f) 
+    {
+        free(tmp);
+        return NULL;
+    }
+    return (void*)(tmp);
+}
+
+int log_write(void* handle, char* text) 
+{
+    my_demo_t* tmp = (my_demo_t*)(handle);
+    if (NULL == tmp) 
+    {
+        return -1;
+    }
+    fprintf(tmp->f,"%s",text);
+    fflush(tmp->f);
+    return 0;
+}
+
+int log_close(void* handle) 
+{
+    my_demo_t* tmp= (my_demo_t*)(handle);
+    if (NULL == tmp)
+    {
+        return -1;
+    }
+    fclose(tmp->f);
+    free(tmp);
+    return 0;
+
+}
+
+_student_t* create_record(_student_t** record, char* name, int age, int class)
+{
+    _student_t* tmp;
+    
+    tmp = malloc(sizeof(_student_t));
+    
+    if (NULL == tmp)
+    {
+        *record = NULL;
+        return NULL;
+    }
+
+    memset(tmp,0,sizeof(_student_t));
+    strcpy(tmp->name, name);
+    tmp->age = age;
+    tmp->class = class;
+
+    *record = tmp;
+    return *record;
+}
+
+int main()
+{ 
+    //con tro ham - con tro 1*
+    
+    _student_t* get;
+    
+    get = get_data_back("blo");
+    
+    if(NULL != get)
+    {
+    /*
+        printf("name:%s\n age: %d\n class :%d\n",
+            get->name,
+            get->age,
+            get->class);
+    */
+    }
+    
+    unsigned long long record;
+
+    record = long_get_data_back("alo");
+    
+    if (0 != record) 
+    {
+    get = (_student_t*)(record);
+    /*  
+    printf("name:%s\n age: %d\n class :%d\n",
+            get->name,
+            get->age,
+            get->class);
+    */  
+    }
+
+    //int age = get_age((void*)(record));
+    //printf("age:%d\n",age);
+
+
+    void* my_log_handle;
+    my_log_handle = log_create("/home/nam/tmp/test.log");
+    log_write(my_log_handle,"Hello world");
+    log_close(my_log_handle);
+    
+    //con tro 2*
+    
+    _student_t* my_record = NULL;
+    create_record(&my_record,"Pham_Nam",25,20);
+    printf("name:%s\t age:%d\t class:%d\n",
+        my_record->name,
+        my_record->age,
+        my_record->class);
+
+    return 0;
+}
